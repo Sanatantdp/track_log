@@ -37,7 +37,7 @@ def write_log(data: dict):
 async def log_api(request: Request):
     try:
         body = await request.json()
-        raw = body.get("p")         
+        raw = body.get("p")                      # ✅ FIXED
         decoded = base64.b64decode(raw).decode("utf-8")
         decoded = decoded.replace("x9A@1", "", 1)
         data = json.loads(decoded)
@@ -46,36 +46,39 @@ async def log_api(request: Request):
 
     full_url = data.get("u")
     parsed = urlparse(full_url) if full_url else None
-
     log_data = {
-        "time": datetime.utcnow().isoformat(),
-        "ip": get_client_ip(request),
-        "port": request.client.port if request.client else None,
-        "method": request.method,
-        "path": parsed.path if parsed else request.url.path,
-        "query": "?" + parsed.query if parsed and parsed.query else None,
-        "host": request.headers.get("host"),
-        "user_agent": request.headers.get("user-agent"),
-        "accept_language": request.headers.get("accept-language"),
+    # server-generated
+    "time": datetime.utcnow().isoformat(),
+    "ip": get_client_ip(request),
+    "port": request.client.port if request.client else None,
+    "method": request.method,
+    "path": parsed.path if parsed else request.url.path,
+    "query": "?" + parsed.query if parsed and parsed.query else None,
+    "host": request.headers.get("host"),
+    "user_agent": request.headers.get("user-agent"),
+    "accept_language": request.headers.get("accept-language"),
 
-        # decoded payload
-        "diamond_id": data.get("d"),
-        "type": data.get("t"),
-        "event": data.get("e"),
-        "is_image_mode": data.get("i", False),
-        "screen": data.get("s"),
-        "viewport": data.get("v"),
-        "full_url": full_url,
-        "referrer": data.get("r"),
-    }
+    # decoded payload (trusted context only)
+    "diamond_id": data.get("d"),
+    "type": data.get("t"),
+    "event": data.get("e"),
+    "is_image_mode": data.get("i", False),
+    "screen": data.get("s"),
+    "viewport": data.get("v"),
+    "full_url": data.get("u"),
+    "referrer": data.get("r"),
 
+    # additional analytics
+    "session_id": data.get("sid"),
+    "client_time": data.get("ct"),
+    "timezone": data.get("tz"),
+    "page_title": data.get("pt"),
+    "device_type": data.get("dt"),
+}
     write_log(log_data)
     print(log_data)
 
     return JSONResponse({"status": "ok"})
-
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
