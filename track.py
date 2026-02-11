@@ -7,7 +7,7 @@ from datetime import datetime
 
 app = FastAPI()
 
-WEBHOOK_URL = "http://192.168.1.16:5484/receive-log" 
+WEBHOOK_URL = "https://geography-deemed-what-les.trycloudflare.com/receive-log" 
 
 def get_client_ip(request: Request):
     forwarded = request.headers.get("X-Forwarded-For")
