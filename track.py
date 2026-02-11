@@ -7,8 +7,7 @@ from datetime import datetime
 
 app = FastAPI()
 
-WEBHOOK_URL = "http://192.168.1.16/receive-log"  # change this
-
+WEBHOOK_URL = "http://192.168.1.16:5484/receive-log" 
 
 def get_client_ip(request: Request):
     forwarded = request.headers.get("X-Forwarded-For")
@@ -53,3 +52,12 @@ async def log_api(request: Request):
             {"status": "failed", "error": str(e)},
             status_code=500
         )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "track:app",
+        host="0.0.0.0",
+        port=5484,
+        reload=False
+    )
