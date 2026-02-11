@@ -46,9 +46,6 @@ async def log_api(request: Request):
 
     log_data = {
     "ip": get_client_ip(request),
-    "host": request.headers.get("host"),
-    
-    "diamond_id": data.get("d"),
     "full_url": data.get("u"),
     "referrer": data.get("r"),
     }
