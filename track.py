@@ -4,7 +4,7 @@ import base64
 import json
 import httpx
 from datetime import datetime
-
+import requests
 app = FastAPI()
 
 WEBHOOK_URL = "https://geography-deemed-what-les.trycloudflare.com/receive-log" 
@@ -34,16 +34,14 @@ async def log_api(request: Request):
         "referrer": data.get("r"),
     }
 
-    # Call second API
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.post(WEBHOOK_URL, json=log_data)
+        response = requests.post(WEBHOOK_URL, json=log_data, timeout=5)
 
         if response.status_code == 200:
             return JSONResponse({"status": "ok"})
         else:
             return JSONResponse(
-                {"status": "failed", "reason": "Webhook error"},
+                {"status": "failed", "reason": response.text},
                 status_code=500
             )
 
@@ -52,7 +50,6 @@ async def log_api(request: Request):
             {"status": "failed", "error": str(e)},
             status_code=500
         )
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
